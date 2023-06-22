@@ -1,0 +1,243 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+class MenuItem {
+  private String name;
+  private String description;
+  private double price;
+  private boolean available;
+
+  public MenuItem(String name, String description, double price, boolean available) {
+    this.name = name;
+    this.description = description;
+    this.price = price;
+    this.available = available;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public double getPrice() {
+    return price;
+  }
+
+  public boolean isAvailable() {
+    return available;
+  }
+}
+
+class OrderItem {
+  private MenuItem menuItem;
+  private int quantity;
+
+  public OrderItem(MenuItem menuItem, int quantity) {
+    this.menuItem = menuItem;
+    this.quantity = quantity;
+  }
+
+  public MenuItem getMenuItem() {
+    return menuItem;
+  }
+
+  public int getQuantity() {
+    return quantity;
+  }
+}
+
+class Order {
+  private List<OrderItem> items;
+  private boolean closed;
+
+  public Order() {
+    items = new ArrayList<>();
+    closed = false;
+  }
+
+  public void addItem(OrderItem item) {
+    if (!closed) {
+      items.add(item);
+      System.out.println("Item adicionado ao pedido: " + item.getMenuItem().getName());
+    } else {
+      System.out.println("O pedido está fechado. Não é possível adicionar itens.");
+    }
+  }
+
+  public void removeItem(OrderItem item) {
+    if (!closed) {
+      items.remove(item);
+      System.out.println("Item removido do pedido: " + item.getMenuItem().getName());
+    } else {
+      System.out.println("O pedido está fechado. Não é possível remover itens.");
+    }
+  }
+
+  public double calculateTotal() {
+    double total = 0.0;
+    for (OrderItem item : items) {
+      total += item.getMenuItem().getPrice() * item.getQuantity();
+    }
+    return total;
+  }
+
+  public void closeOrder() {
+    closed = true;
+    System.out.println("Pedido fechado. Total a pagar: R$" + calculateTotal());
+  }
+
+  public boolean isClosed() {
+    return closed;
+  }
+
+  public List<OrderItem> getItems() {
+    return items;
+  }
+}
+
+class Menu {
+  private List<MenuItem> items;
+
+  public Menu() {
+    items = new ArrayList<>();
+  }
+
+  public void addItem(MenuItem item) {
+    items.add(item);
+  }
+
+  public void displayMenu() {
+    System.out.println("----- Menu -----");
+    for (MenuItem item : items) {
+      if (item.isAvailable()) {
+        System.out.println(item.getName() + " - " + item.getDescription() + " - R$" + item.getPrice());
+      }
+    }
+    System.out.println("----------------");
+  }
+
+  public MenuItem findMenuItem(String name) {
+    for (MenuItem item : items) {
+      if (item.getName().equalsIgnoreCase(name) && item.isAvailable()) {
+        return item;
+      }
+    }
+    return null;
+  }
+}
+
+class RestaurantApp {
+  private Menu menu;
+  private Order order;
+
+  public RestaurantApp() {
+    menu = new Menu();
+    order = new Order();
+  }
+
+  public void initializeMenu() {
+    // Exemplo de adição de itens ao cardápio
+    MenuItem item1 = new MenuItem("Hambúrguer", "Pão, carne, queijo, alface, tomate", 15.0, true);
+    MenuItem item2 = new MenuItem("Pizza", "Massa, molho de tomate, queijo, pepperoni", 25.0, true);
+    MenuItem item3 = new MenuItem("Salada", "Alface, tomate, pepino, molho de salada", 10.0, true);
+
+    menu.addItem(item1);
+    menu.addItem(item2);
+    menu.addItem(item3);
+  }
+
+  public void startApp() {
+    Scanner scanner = new Scanner(System.in);
+
+    System.out.println("Bem-vindo ao Restaurante Digital!");
+
+    while (true) {
+      System.out.println("\nEscolha uma opção:");
+      System.out.println("1. Ver cardápio");
+      System.out.println("2. Fazer pedido");
+      System.out.println("3. Gerenciar pedidos");
+      System.out.println("4. Fechar pedido");
+      System.out.println("5. Sair");
+
+      int option = scanner.nextInt();
+
+      switch (option) {
+        case 1:
+          menu.displayMenu();
+          break;
+        case 2:
+          if (!order.isClosed()) {
+            makeOrder(scanner);
+          } else {
+            System.out.println("O pedido já está fechado. Não é possível fazer novos pedidos.");
+          }
+          break;
+        case 3:
+          manageOrders();
+          break;
+        case 4:
+          if (!order.isClosed()) {
+            order.closeOrder();
+          } else {
+            System.out.println("O pedido já está fechado.");
+          }
+          break;
+        case 5:
+          System.out.println("Obrigado por utilizar o Restaurante Digital. Até mais!");
+          return;
+        default:
+          System.out.println("Opção inválida. Por favor, escolha novamente.");
+      }
+    }
+  }
+
+  private void makeOrder(Scanner scanner) {
+    System.out.println("\nFaça seu pedido:");
+
+    while (true) {
+      System.out.print("Digite o nome do item (ou 'sair' para finalizar o pedido): ");
+      String itemName = scanner.next();
+
+      if (itemName.equalsIgnoreCase("sair")) {
+        break;
+      }
+
+      MenuItem menuItem = menu.findMenuItem(itemName);
+
+      if (menuItem != null) {
+        System.out.print("Digite a quantidade: ");
+        int quantity = scanner.nextInt();
+
+        OrderItem orderItem = new OrderItem(menuItem, quantity);
+        order.addItem(orderItem);
+      } else {
+        System.out.println("Item não encontrado no cardápio.");
+      }
+    }
+  }
+
+  private void manageOrders() {
+    System.out.println("\nGerenciamento de Pedidos");
+    System.out.println("Status do Pedido: " + (order.isClosed() ? "Fechado" : "Aberto"));
+
+    if (!order.isClosed()) {
+      System.out.println("Itens do Pedido:");
+      List<OrderItem> items = order.getItems();
+      for (OrderItem item : items) {
+        System.out.println(item.getMenuItem().getName() + " - " + item.getQuantity());
+      }
+    }
+  }
+}
+
+public class Main {
+  public static void main(String[] args) {
+    RestaurantApp restaurantApp = new RestaurantApp();
+    restaurantApp.initializeMenu();
+    restaurantApp.startApp();
+  }
+}
